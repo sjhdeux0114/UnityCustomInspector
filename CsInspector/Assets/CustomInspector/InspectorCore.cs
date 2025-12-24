@@ -113,7 +113,7 @@ public static class InspectorParser
 
             // AssetList (자동 인식 포함)
             var assetListAttr = fi.GetCustomAttribute<AssetListAttribute>();
-            bool isImageType = checkType == typeof(Sprite); // Sprite 배열은 자동으로 편하게 쓰고 싶을 수 있음
+
 
             if (inlineAttr != null || requiredAttr != null || dropdownAttr != null ||
                 showIfAttr != null || readOnlyAttr != null || minMaxAttr != null ||
@@ -124,6 +124,7 @@ public static class InspectorParser
                 findChildAttr != null || colorPresetAttr != null || onValueChangedAttr != null ||
                 assetListAttr != null)
                 data.HasCustomLayout = true;
+
 
             // GameObject 자동 Required 처리
             if (requiredAttr == null &&
@@ -989,8 +990,26 @@ public static class InspectorDrawer
 
     private static void DrawViewerGUI(SerializedProperty prop, ViewerAttribute viewer)
     {
-        var obj = prop.objectReferenceValue;
-        if (prop.isArray && prop.arraySize > 0) obj = prop.GetArrayElementAtIndex(0).objectReferenceValue;
+        UnityEngine.Object obj = null;
+
+        // [수정됨] 배열인지 먼저 확인 후 값을 가져오도록 순서를 변경했습니다.
+        if (prop.isArray)
+        {
+            // 배열인 경우 첫 번째 요소의 값을 가져옵니다 (배열 자체의 값이 아님)
+            if (prop.arraySize > 0)
+            {
+                var element = prop.GetArrayElementAtIndex(0);
+                if (element.propertyType == SerializedPropertyType.ObjectReference)
+                    obj = element.objectReferenceValue;
+            }
+        }
+        else
+        {
+            // 배열이 아닌 경우에만 직접 접근
+            if (prop.propertyType == SerializedPropertyType.ObjectReference)
+                obj = prop.objectReferenceValue;
+        }
+
         if (obj == null) return;
 
         if (obj is Sprite s)
