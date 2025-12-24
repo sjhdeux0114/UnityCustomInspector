@@ -2,6 +2,32 @@
 using UnityEngine.UI;
 using System.Collections.Generic;
 
+public enum TestEnum
+{
+
+    None = 0,
+    Test001 = 1,
+    Test002 = 2,
+    Test003 = 3,
+    Test004 = 4,
+    Test005 = 5,
+    Test006 = 6,
+    Test007 = 7,
+    Test008 = 8,
+    Test009 = 9,
+    Test010 = 10,
+    Test011 = 11,
+    Test012 = 12,
+    Test013 = 13,
+    Test014 = 14,
+    Test015 = 15,
+    Test016 = 16,
+    Test017 = 17,
+    Test018 = 18,
+    Test019 = 19,
+
+}
+
 public class UniversalInspectorExample : MonoBehaviour
 {
     // =========================================================
@@ -25,6 +51,13 @@ public class UniversalInspectorExample : MonoBehaviour
     [TabGroup("Design")]
     [BoxGroup("Movement Settings")]
     [Suffix("deg")] public float turnSpeed = 90f;
+
+    public Sprite spr;
+    public Sprite[] sprs;
+    [Viewer]
+    public AudioClip snd;
+
+    public TestEnum testEnum;
 
 
     // =========================================================

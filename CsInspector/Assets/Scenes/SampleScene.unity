@@ -421,10 +421,28 @@ MonoBehaviour:
   y: 0
   moveSpeed: 5
   turnSpeed: 90
+  spr: {fileID: 21300000, guid: 94aac3693c954d44b807af389757a307, type: 3}
+  sprs:
+  - {fileID: 21300000, guid: 94aac3693c954d44b807af389757a307, type: 3}
+  - {fileID: 21300000, guid: 94aac3693c954d44b807af389757a307, type: 3}
+  snd: {fileID: 8300000, guid: 1f289b31806c52e44a56fa9f8edecfba, type: 3}
+  testEnum: 0
   titleText: {fileID: 0}
   closeButton: {fileID: 0}
   mainColor: {r: 0, g: 0, b: 1, a: 1}
-  animationFrames: []
+  animationFrames:
+  - {fileID: 21300000, guid: 94aac3693c954d44b807af389757a307, type: 3}
+  - {fileID: 21300000, guid: 8dd8638fdb1cd354289537618e8b63be, type: 3}
+  - {fileID: 21300000, guid: 59f14a9379518794a8190997419f2774, type: 3}
+  - {fileID: 21300000, guid: aaa0673c0ad8b49478e6ba8cde92fb3b, type: 3}
+  - {fileID: 21300000, guid: 7c4aa3823d0335f45ba18f206037c17e, type: 3}
+  - {fileID: 21300000, guid: faec9af82adc7254d95b5cea8c716a63, type: 3}
+  - {fileID: 21300000, guid: 088dfcb7d5468e84eb55cde8b8debad4, type: 3}
+  - {fileID: 21300000, guid: 89a3dcb962b8aa74cbe42ad1fe04dcad, type: 3}
+  - {fileID: 21300000, guid: 49cb6235f5008f849adb8e29eec49a9a, type: 3}
+  - {fileID: 21300000, guid: 1ba3c354b00cd8948ace83cf73f242e0, type: 3}
+  - {fileID: 21300000, guid: 46683aab86e831f438618f59f308f2c1, type: 3}
+  - {fileID: 21300000, guid: bc70ebbe9ee50cf499591acdcf9ae971, type: 3}
   saveDirectory: 
   alpha: 1
   playerTag: Respawn
@@ -438,7 +456,7 @@ MonoBehaviour:
   currentMana: 50
   MAX_HP: 996.17
   currentHP: 50
-  spawnTimeRange: {x: 3.03, y: 14.13}
+  spawnTimeRange: {x: 4.87, y: 14.13}
   corePrefab: {fileID: 0}
   attackDamage: 0
   isAttacking: 0
