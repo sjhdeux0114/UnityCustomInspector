@@ -66,6 +66,7 @@ public class SpriteGroupAnimator : MonoBehaviour
 
     [Header("Animations")]
     public List<SpriteGroupState> animations = new List<SpriteGroupState>();
+    [ValueDropdown("GetAnimationNames")]
     public string defaultAnimation;
     public bool playOnAwake = true;
     public bool bUnscaled = false;
