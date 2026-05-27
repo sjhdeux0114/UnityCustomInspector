@@ -1,14 +1,14 @@
-﻿#if UNITY_EDITOR
-using UnityEngine;
-using UnityEngine.UI;
-using UnityEditor;
-using System.Collections.Generic;
-using System.Reflection;
-using System.Linq;
+#if UNITY_EDITOR
 using System;
 using System.Collections;
-using UnityEditor.Animations;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Reflection;
+using UnityEditor;
+using UnityEditor.Animations;
+using UnityEngine;
+using UnityEngine.UI;
 
 // -----------------------------------------------------------------------------
 // [분석기] 스크립트 구조 분석
@@ -137,7 +137,7 @@ public static class InspectorParser
 
             var viewer = checkType.GetCustomAttribute<ViewerAttribute>();
             var noViewAttr = checkType.GetCustomAttribute<NoViewAttribute>();
-            bool isMediaType = checkType == typeof(Sprite) || checkType == typeof(AudioClip) ||
+            bool isMediaType = checkType == typeof(Sprite) ||
                                checkType == typeof(GameObject) || checkType == typeof(TextAsset);
 
             if (viewer != null || (isMediaType && noViewAttr == null))
@@ -420,12 +420,10 @@ public static class InspectorDrawer
 
                 // ... (기존 로직 유지) ...
 
-                // [수정됨] AudioClip인 경우 버튼 높이(20f) 추가
                 bool isRef = prop.propertyType == SerializedPropertyType.ObjectReference;
                 if (field.Viewer != null && isRef && prop.objectReferenceValue != null)
                 {
-                    if (prop.objectReferenceValue is AudioClip) fieldHeight += 24f; // 버튼 공간 확보
-                    else fieldHeight += field.Viewer.Height + 2f; // 이미지 등
+                    fieldHeight += field.Viewer.Height + 2f; // 이미지 등
                 }
 
                 // ... (기존 박스/Horizontal 로직 유지) ...
@@ -519,40 +517,42 @@ public static class InspectorDrawer
                     // ... (기존 그리기 로직 유지) ...
                     // ... (MinMax, ProgressBar 등) ...
 
-                    curRect.height = propHeight;
-                    EditorGUI.PropertyField(curRect, prop, true);
+                    bool guiEnabled = GUI.enabled;
+                    if (field.ReadOnly != null) GUI.enabled = false;
 
-                    // [수정됨] 뷰어 처리 (오디오 포함)
+                    curRect.height = propHeight;
+                    if (field.AssetList != null && prop.isArray) DrawAssetListRect(curRect, prop);
+                    else if (field.Dropdown != null) DrawDropdownRect(curRect, prop, field.Dropdown, field.Info);
+                    else if (field.SceneName != null && prop.propertyType == SerializedPropertyType.String) DrawSceneNameRect(curRect, prop);
+                    else if (field.Tag != null && prop.propertyType == SerializedPropertyType.String) prop.stringValue = EditorGUI.TagField(curRect, new GUIContent(prop.displayName), prop.stringValue);
+                    else if (field.Layer != null && prop.propertyType == SerializedPropertyType.Integer) prop.intValue = EditorGUI.LayerField(curRect, new GUIContent(prop.displayName), prop.intValue);
+                    else if (field.SortingLayer != null && prop.propertyType == SerializedPropertyType.Integer) DrawSortingLayerRect(curRect, prop);
+                    else if (field.InputAxis != null && prop.propertyType == SerializedPropertyType.String) DrawInputAxisRect(curRect, prop);
+                    else if (field.MinMax != null && prop.propertyType == SerializedPropertyType.Vector2) DrawMinMaxSliderRect(curRect, prop, field.MinMax);
+                    else if (field.ProgressBar != null && (prop.propertyType == SerializedPropertyType.Float || prop.propertyType == SerializedPropertyType.Integer)) DrawProgressBarRect(curRect, prop, field.ProgressBar);
+                    else
+                    {
+                        EditorGUI.PropertyField(curRect, prop, true);
+                    }
+
+                    if (field.ReadOnly != null) GUI.enabled = guiEnabled;
+
+                    // 뷰어 처리
                     bool isRef = prop.propertyType == SerializedPropertyType.ObjectReference;
                     if (field.Viewer != null && isRef && prop.objectReferenceValue != null)
                     {
                         var obj = prop.objectReferenceValue;
 
-                        if (obj is AudioClip clip)
-                        {
-                            // 오디오 재생 UI
-                            curRect.y += propHeight + 2f;
-                            Rect btnRect = new Rect(curRect.x + EditorGUIUtility.labelWidth, curRect.y, 60, 18);
+                        // 기존 이미지 뷰어
+                        Rect viewRect = new Rect(curRect.x + EditorGUIUtility.labelWidth, curRect.y + propHeight + 2f, field.Viewer.Width, field.Viewer.Height);
 
-                            if (GUI.Button(btnRect, "▶ Play")) AudioPreviewer.Play(clip);
-                            btnRect.x += 65;
-                            if (GUI.Button(btnRect, "■ Stop")) AudioPreviewer.Stop();
+                        Texture2D tex = null;
+                        if (obj is Sprite s) tex = AssetPreview.GetAssetPreview(s);
+                        else if (obj is Texture2D t) tex = t;
+                        else if (obj is GameObject g) tex = AssetPreview.GetAssetPreview(g);
 
-                            curRect.y += 20f; // 버튼 높이만큼 커서 이동
-                        }
-                        else
-                        {
-                            // 기존 이미지 뷰어
-                            Rect viewRect = new Rect(curRect.x + EditorGUIUtility.labelWidth, curRect.y + propHeight + 2f, field.Viewer.Width, field.Viewer.Height);
-
-                            Texture2D tex = null;
-                            if (obj is Sprite s) tex = AssetPreview.GetAssetPreview(s);
-                            else if (obj is Texture2D t) tex = t;
-                            else if (obj is GameObject g) tex = AssetPreview.GetAssetPreview(g);
-
-                            if (tex) GUI.DrawTexture(viewRect, tex, ScaleMode.ScaleToFit);
-                            curRect.y += field.Viewer.Height + 2f;
-                        }
+                        if (tex) GUI.DrawTexture(viewRect, tex, ScaleMode.ScaleToFit);
+                        curRect.y += field.Viewer.Height + 2f;
                     }
                     else
                     {
@@ -858,17 +858,27 @@ public static class InspectorDrawer
     {
         var list = GetDropdownList(prop, attr.MethodName);
         if (list == null) { EditorGUILayout.PropertyField(prop); return; }
-        int index = list.IndexOf(prop.stringValue);
-        int newIndex = EditorGUILayout.Popup(prop.displayName, index, list.ToArray());
-        if (newIndex >= 0) prop.stringValue = list[newIndex];
+        
+        List<string> displayList = new List<string> { "(None)" };
+        displayList.AddRange(list);
+        
+        int index = list.IndexOf(prop.stringValue) + 1; // if not found, -1 + 1 = 0 ((None))
+        int newIndex = EditorGUILayout.Popup(prop.displayName, index, displayList.ToArray());
+        if (newIndex > 0) prop.stringValue = list[newIndex - 1];
+        else if (newIndex == 0) prop.stringValue = "";
     }
     private static void DrawDropdownRect(Rect rect, SerializedProperty prop, ValueDropdownAttribute attr, FieldInfo info)
     {
         var list = GetDropdownList(prop, attr.MethodName);
         if (list == null) { EditorGUI.PropertyField(rect, prop); return; }
-        int index = list.IndexOf(prop.stringValue);
-        int newIndex = EditorGUI.Popup(rect, prop.displayName, index, list.ToArray());
-        if (newIndex >= 0) prop.stringValue = list[newIndex];
+        
+        List<string> displayList = new List<string> { "(None)" };
+        displayList.AddRange(list);
+        
+        int index = list.IndexOf(prop.stringValue) + 1; // if not found, -1 + 1 = 0 ((None))
+        int newIndex = EditorGUI.Popup(rect, prop.displayName, index, displayList.ToArray());
+        if (newIndex > 0) prop.stringValue = list[newIndex - 1];
+        else if (newIndex == 0) prop.stringValue = "";
     }
     private static List<string> GetDropdownList(SerializedProperty prop, string methodName)
     {
@@ -908,18 +918,7 @@ public static class InspectorDrawer
 
         if (obj == null) return;
 
-        if (obj is AudioClip clip)
-        {
-            // 1. 원래 색상 저장 (필수!)
-            Color oldColor = GUI.backgroundColor;
-            GUI.backgroundColor = new Color(0.6f, 1f, 0.6f);
-            if (GUILayout.Button("▶", GUILayout.Width(25), GUILayout.Height(18))) AudioPreviewer.Play(clip);
-            GUI.backgroundColor = new Color(1f, 0.6f, 0.6f);
-            if (GUILayout.Button("■", GUILayout.Width(25), GUILayout.Height(18))) AudioPreviewer.Stop();
-            GUI.backgroundColor = oldColor;
-            GUILayout.Label($"{clip.length:F1}s", EditorStyles.miniLabel);
-        }
-        else if (obj is Sprite)
+        if (obj is Sprite)
         {
             if (obj is Sprite s)
             {

@@ -1,0 +1,18 @@
+{
+    "name": "Custom2dEditor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:566bf8d5829248349b552583e8e5d4ff"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

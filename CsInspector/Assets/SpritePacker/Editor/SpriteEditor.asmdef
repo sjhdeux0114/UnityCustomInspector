@@ -1,0 +1,19 @@
+{
+    "name": "SpriteEditor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:566bf8d5829248349b552583e8e5d4ff",
+        "GUID:2c573e6b271651846a79655161004c5b"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

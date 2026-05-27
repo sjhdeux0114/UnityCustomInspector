@@ -1,0 +1,17 @@
+{
+    "name": "MainUtil",
+    "rootNamespace": "",
+    "references": [
+        "GUID:2c573e6b271651846a79655161004c5b",
+        "GUID:10a7d631be4d9834fb7c88bbfc51f2f7"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

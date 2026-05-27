@@ -12,7 +12,7 @@ public class DefineManagerWindow : EditorWindow
     {
         "USE_TEST_MODE",
         "OIDD_NONE",
-        "AUTO_JUNGSAN",
+        "SIM_TEST",
         "CASH_VER"
     };
 
@@ -24,6 +24,22 @@ public class DefineManagerWindow : EditorWindow
 
     private void OnGUI()
     {
+        // --- 1. Player Settings 제어 영역 ---
+        GUILayout.Label("Player Settings", EditorStyles.boldLabel);
+
+        // 스크린샷에 있던 'Use Player Log' 체크박스 제어
+        bool useLog = EditorGUILayout.Toggle("Use Player Log", PlayerSettings.usePlayerLog);
+        if (useLog != PlayerSettings.usePlayerLog)
+        {
+            PlayerSettings.usePlayerLog = useLog;
+            Debug.Log($"[DefineManager] Use Player Log set to: {useLog}");
+        }
+
+        EditorGUILayout.Space();
+        EditorGUILayout.LabelField("", GUI.skin.horizontalSlider); // 구분선
+        EditorGUILayout.Space();
+
+        // --- 2. Scripting Define Symbols 제어 영역 ---
         GUILayout.Label("Scripting Define Symbols", EditorStyles.boldLabel);
 
         // 현재 선택된 빌드 타겟 그룹 가져오기 (PC, Android, iOS 등)
@@ -32,7 +48,7 @@ public class DefineManagerWindow : EditorWindow
 
         // 현재 설정된 Define 목록 가져오기
         string definesString = PlayerSettings.GetScriptingDefineSymbols(namedBuildTarget);
-        List<string> currentDefines = definesString.Split(';').ToList();
+        List<string> currentDefines = definesString.Split(';', System.StringSplitOptions.RemoveEmptyEntries).ToList();
 
         bool isChanged = false;
 
@@ -52,7 +68,7 @@ public class DefineManagerWindow : EditorWindow
         if (isChanged)
         {
             // 변경사항 적용
-            PlayerSettings.SetScriptingDefineSymbols(namedBuildTarget, string.Join(";", currentDefines));
+            PlayerSettings.SetScriptingDefineSymbols(namedBuildTarget, string.Join(";", currentDefines.Distinct()));
             Debug.Log("Defines updated!");
         }
     }

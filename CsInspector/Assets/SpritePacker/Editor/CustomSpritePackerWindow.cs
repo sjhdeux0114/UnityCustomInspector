@@ -7,6 +7,7 @@ using UnityEngine;
 
 public class CustomSpritePackerWindow : EditorWindow
 {
+    
     private List<Texture2D> texturesToPack = new List<Texture2D>();
     private string atlasName = "NewSpriteAtlas";
     private int maxAtlasSize = 4096;
@@ -150,6 +151,7 @@ public class CustomSpritePackerWindow : EditorWindow
         Dictionary<string, bool> originalReadableStates = new Dictionary<string, bool>();
         Dictionary<string, TextureImporterFormat> originalFormats = new Dictionary<string, TextureImporterFormat>();
         Dictionary<string, TextureImporterCompression> originalCompressions = new Dictionary<string, TextureImporterCompression>();
+        Dictionary<string, TextureImporterNPOTScale> originalNPOTScales = new Dictionary<string, TextureImporterNPOTScale>();
 
         List<Texture2D> readableTextures = new List<Texture2D>();
         List<string> originalPaths = new List<string>();
@@ -192,6 +194,7 @@ public class CustomSpritePackerWindow : EditorWindow
                 {
                     originalReadableStates[path] = ti.isReadable;
                     originalCompressions[path] = ti.textureCompression;
+                    originalNPOTScales[path] = ti.npotScale;
 
                     // 기존 스프라이트 설정(피벗, 보더 등) 백업
                     TextureImporterSettings settings = new TextureImporterSettings();
@@ -207,11 +210,14 @@ public class CustomSpritePackerWindow : EditorWindow
                     };
                     originalMetaDataList.Add(meta);
 
-                    // 읽기가 불가능하거나 압축되어있으면 임시로 풀어준다
-                    if (!ti.isReadable || ti.textureCompression != TextureImporterCompression.Uncompressed)
+                    // 읽기가 불가능하거나 압축되어있거나 NPOT 스케일이 켜져있으면 임시로 풀어준다
+                    if (!ti.isReadable || 
+                        ti.textureCompression != TextureImporterCompression.Uncompressed || 
+                        ti.npotScale != TextureImporterNPOTScale.None)
                     {
                         ti.isReadable = true;
                         ti.textureCompression = TextureImporterCompression.Uncompressed;
+                        ti.npotScale = TextureImporterNPOTScale.None;
                         ti.SaveAndReimport();
                     }
                 }
@@ -320,6 +326,8 @@ public class CustomSpritePackerWindow : EditorWindow
                     atlasImporter.textureType = TextureImporterType.Sprite;
                     atlasImporter.spriteImportMode = SpriteImportMode.Multiple;
                     atlasImporter.mipmapEnabled = false;
+                    atlasImporter.npotScale = TextureImporterNPOTScale.None;
+                    atlasImporter.maxTextureSize = maxAtlasSize;
 
                     SpriteRect[] newMeta = new SpriteRect[packCount];
                     for (int i = 0; i < packCount; i++)
@@ -410,6 +418,8 @@ public class CustomSpritePackerWindow : EditorWindow
                     {
                         ti.isReadable = originalReadableStates[path];
                         ti.textureCompression = originalCompressions[path];
+                        if (originalNPOTScales.ContainsKey(path))
+                            ti.npotScale = originalNPOTScales[path];
                         ti.SaveAndReimport();
                     }
                 }
@@ -525,4 +535,5 @@ public class CustomSpritePackerWindow : EditorWindow
 
         Debug.Log($"아틀라스 '{atlasTex.name}'에서 {metaInfoList.Count}개의 스프라이트를 추출하여 목록에 추가했습니다.");
     }
+    
 }

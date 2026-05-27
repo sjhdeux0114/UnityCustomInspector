@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
 
@@ -26,6 +26,13 @@ public class TabbedEditor : Editor
 
     public override void OnInspectorGUI()
     {
+        if (_layout == null) OnEnable();
+        if (_layout == null) 
+        {
+            base.OnInspectorGUI();
+            return;
+        }
+
         serializedObject.Update();
 
         SerializedProperty script = serializedObject.FindProperty("m_Script");
